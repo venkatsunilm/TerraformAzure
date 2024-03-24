@@ -5,6 +5,8 @@ terraform {
       version = "~>3.0"
     }
   }
+
+  backend "azurerm" {}
 }
 
 provider "azurerm" {
@@ -18,12 +20,12 @@ resource "random_string" "resource_code" {
 }
 
 resource "azurerm_resource_group" "tfstate" {
-  name     = var.common_resource_group
+  name     = var.common_resource_group_name
   location = var.location
 }
 
 resource "azurerm_storage_account" "tfstate" {
-  name                            = "${var.storage_account}${random_string.resource_code.result}"
+  name                            = "${var.state_storage_account_name}${random_string.resource_code.result}"
   resource_group_name             = azurerm_resource_group.tfstate.name
   location                        = azurerm_resource_group.tfstate.location
   account_tier                    = "Standard"
@@ -36,10 +38,12 @@ resource "azurerm_storage_account" "tfstate" {
 }
 
 resource "azurerm_storage_container" "tfstate" {
-  name                  = var.container
+  name                  = var.state_storage_container_name
   storage_account_name  = azurerm_storage_account.tfstate.name
   container_access_type = "private"
-}
 
-# export KEYVAULT_NAME=terraform-kv
-# name                            = "tfstate${random_string.resource_code.result}"
+  # provisioner "local-exec" {
+  #   command = "bash ./scripts/init-remote-state.sh" # ../../scripts/init-env-vars.shReplace with the actual path to your script
+  #   when    = create                                # Run the script after the container is created
+  # }
+}
