@@ -8,13 +8,7 @@ terraform {
     }
   }
 
-  # backend "azurerm" {
-  #   # resource_group_name = "terraform-rg"
-  #   # storage_account_name = "tfstatesa"
-  #   # container_name       = "tfstate"
-  #   # # access_key           = "$(az keyvault secret show --name tfstate-storage-key --vault-name ${var.tf_keyvault_name} --query value -o tsv)"
-  #   # key                  = "env.core.tfstate"
-  # }
+  backend "azurerm" {}
 }
 
 provider "azurerm" {

@@ -35,11 +35,11 @@ echo "Retrieving storage account key..."
 ACCOUNT_KEY=$(az storage account keys list --resource-group "$COMMON_RESOURCE_GROUP_NAME" --account-name "$TF_STATE_STORAGE_ACCOUNT_NAME" --query [0].value -o tsv)
 echo "Storage account key retrieved. $ACCOUNT_KEY"
 
-STORAGE_CONTAINER_EXISTS=$(az storage container exists --name "$TF_STATE_CONTAINER_NAME" --account-name "$TF_STATE_STORAGE_ACCOUNT_NAME" --account-key "$ACCOUNT_KEY" --query exists)
-echo "Storage container exists status: $STORAGE_CONTAINER_EXISTS"  # Now displays "true" or "false"
+storage_container_exists=$(az storage container exists --name "$TF_STATE_CONTAINER_NAME" --account-name "$TF_STATE_STORAGE_ACCOUNT_NAME" --account-key "$ACCOUNT_KEY" --query exists)
+echo "storage container '$TF_STATE_CONTAINER_NAME' exists: $storage_container_exists"
 
 # Create a storage container (if needed)
-if ($STORAGE_CONTAINER_EXISTS); then
+if [[ -z "$storage_container_exists" ]]; then
   echo "Storage container $TF_STATE_CONTAINER_NAME exists..."
 else
   echo "Creating $TF_STATE_CONTAINER_NAME storage container..."
@@ -47,16 +47,19 @@ else
   echo "Storage container $TF_STATE_CONTAINER_NAME created."
 fi
 
-RETRIEVE_KEYVAULT_NAME=$(az keyvault list --query "[?name == '$KEYVAULT_NAME'].name | [0]")
-echo "Key Vault name is: $RETRIEVE_KEYVAULT_NAME"
+read -p "Press Enter to continue..."
 
-# create a keyvault
-if [[ $RETRIEVE_KEYVAULT_NAME == "$KEYVAULT_NAME" ]]; then
-  echo "Key vault $KEYVAULT_NAME exists..."
-else
+# Check if Key Vault exists
+keyvault_exists=$(az keyvault list --query "[?name == '$KEYVAULT_NAME'].name | [0]")
+echo "Key Vault '$KEYVAULT_NAME' exists: $keyvault_exists"
+
+if [[ -z "$keyvault_exists" ]]; then
+  # Create Key Vault if it doesn't exist
   echo "Creating $KEYVAULT_NAME key vault..."
   az keyvault create -g "$COMMON_RESOURCE_GROUP_NAME" -l "$LOCATION" --name "$KEYVAULT_NAME"
   echo "Key vault $KEYVAULT_NAME created."
+else
+  echo "Key Vault $KEYVAULT_NAME already exists."
 fi
 
 # Store the Terraform State Storage Key into KeyVault
@@ -64,6 +67,8 @@ echo "Store storage access key into key vault secret..."
 az keyvault secret set --name tfstate-storage-key --value "$ACCOUNT_KEY" --vault-name "$KEYVAULT_NAME" -o none
 
 echo "Key vault secret created."
+
+read -p "Press Enter to continue..."
 
 # Display information
 echo "Azure Storage Account and KeyVault have been created."
