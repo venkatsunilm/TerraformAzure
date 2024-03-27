@@ -4,12 +4,22 @@ variable "location" {
   default     = "westeurope"
 }
 
+# variable "environment" {
+#   description = "The deployment environment (e.g., dev, staging, production)."
+#   type        = string
+#   validation {
+#     condition     = regex("^dev$|^staging$|^production$")
+#     error_message = "Valid values are 'dev', 'staging', or 'production'."
+#   }
+# }
+
 variable "environment" {
   description = "The deployment environment (e.g., dev, staging, production)."
   type        = string
+
   validation {
-    condition     = regex("^dev$|^staging$|^production$")
-    error_message = "Valid values are 'dev', 'staging', or 'production'."
+    condition     = can(regex("^dev$|^staging$|^production$", var.environment))
+    error_message = "Invalid environment specified. Please use 'dev', 'staging', or 'production'."
   }
 }
 
