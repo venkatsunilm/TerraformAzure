@@ -47,7 +47,7 @@ else
   echo "Storage container $TF_STATE_CONTAINER_NAME created."
 fi
 
-read -p "Press Enter to continue..."
+# read -p "Press Enter to continue..."
 
 # Check if Key Vault exists
 keyvault_exists=$(az keyvault list --query "[?name == '$KEYVAULT_NAME'].name | [0]")
@@ -68,7 +68,7 @@ az keyvault secret set --name tfstate-storage-key --value "$ACCOUNT_KEY" --vault
 
 echo "Key vault secret created."
 
-read -p "Press Enter to continue..."
+# read -p "Press Enter to continue..."
 
 # Display information
 echo "Azure Storage Account and KeyVault have been created."
